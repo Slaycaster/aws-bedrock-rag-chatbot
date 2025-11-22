@@ -1,0 +1,31 @@
+services:
+  rag-chatbot-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rag-chatbot-backend-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - chatbot_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=development
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+  rag-chatbot-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: rag-chatbot-frontend-dev
+    ports:
+      - "80:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+
+volumes:
+  chatbot_data:

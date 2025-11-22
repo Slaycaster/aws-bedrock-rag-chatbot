@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  rag-chatbot-backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - chatbot_data:/app/data
+    environment:
+      - SECRET_KEY=production_secret_key_change_me
+      - ENVIRONMENT=production
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+  rag-chatbot-frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - rag-chatbot-backend
+
+volumes:
+  chatbot_data:
