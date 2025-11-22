@@ -1,5 +1,7 @@
 # AWS Bedrock RAG Chatbot
 
+![AWS Bedrock RAG Chatbot](docs/images/preview.png)
+
 A drop-in app for your VPS/server, embeddable chatbot powered by AWS Bedrock with Retrieval-Augmented Generation (RAG) capabilities.
 
 ## Quick Start
@@ -34,17 +36,33 @@ The script will:
 - Configure AWS credentials and model settings
 - Upload your knowledge base documents
 
-## Screenshots
+## ✨ Features at a Glance
 
-### Setup Wizard
-
-````carousel
-![Step 1: Create Admin Account](file:///Users/fdenimar/.gemini/antigravity/brain/08f51035-043e-417a-8c7f-74d4eb333c83/wizard_step_1_1763800328747.png)
-<!-- slide -->
-![Step 2: AWS Configuration](file:///Users/fdenimar/.gemini/antigravity/brain/08f51035-043e-417a-8c7f-74d4eb333c83/wizard_step_2_1763800362217.png)
-<!-- slide -->
-![Step 3: Upload Documents](file:///Users/fdenimar/.gemini/antigravity/brain/08f51035-043e-417a-8c7f-74d4eb333c83/wizard_step_3_1763800385797.png)
-````
+<table>
+  <tr>
+    <td align="center">
+      <img src="docs/images/feature1.png" alt="Admin Dashboard" width="100%"/>
+      <br />
+      <b>🎨 Beautiful Admin Dashboard</b>
+      <br />
+      <sub>Manage your chatbot with an intuitive, modern interface</sub>
+    </td>
+    <td align="center">
+      <img src="docs/images/feature2.png" alt="Setup Wizard" width="100%"/>
+      <br />
+      <b>🚀 One-Click Setup Wizard</b>
+      <br />
+      <sub>Get started in minutes with our guided configuration flow</sub>
+    </td>
+    <td align="center">
+      <img src="docs/images/feature3.png" alt="Chat Widget" width="100%"/>
+      <br />
+      <b>💬 Embeddable Chat Widget</b>
+      <br />
+      <sub>Drop-in chatbot ready for any website or webview</sub>
+    </td>
+  </tr>
+</table>
 
 ## Deployment Modes
 
