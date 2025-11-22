@@ -15,22 +15,26 @@ A drop-in app for your VPS/server, embeddable chatbot powered by AWS Bedrock wit
 ### Installation
 
 1. **Clone the repository**
+
 ```bash
 git clone <your-repo-url>
 cd aws-bedrock-rag-chatbot
 ```
 
 2. **Run the setup script**
+
 ```bash
 ./setup.sh
 ```
 
 The script will:
+
 - Ask if you want to reset the database (interactive prompt)
 - Build and start the application in production mode
 - Display access URLs
 
 3. **Complete the setup wizard**
+
 - Visit `http://localhost/wizard`
 - Create admin account
 - Configure AWS credentials and model settings
@@ -41,25 +45,25 @@ The script will:
 <table>
   <tr>
     <td align="center">
-      <img src="docs/images/feature1.png" alt="Admin Dashboard" width="100%"/>
-      <br />
-      <b>🎨 Beautiful Admin Dashboard</b>
-      <br />
-      <sub>Manage your chatbot with an intuitive, modern interface</sub>
-    </td>
-    <td align="center">
-      <img src="docs/images/feature2.png" alt="Setup Wizard" width="100%"/>
+      <img src="docs/images/feature1.png" alt="Setup Wizard" width="100%"/>
       <br />
       <b>🚀 One-Click Setup Wizard</b>
       <br />
       <sub>Get started in minutes with our guided configuration flow</sub>
     </td>
     <td align="center">
-      <img src="docs/images/feature3.png" alt="Chat Widget" width="100%"/>
+      <img src="docs/images/feature2.png" alt="Chat Widget" width="100%"/>
       <br />
       <b>💬 Embeddable Chat Widget</b>
       <br />
-      <sub>Drop-in chatbot ready for any website or webview</sub>
+      <sub>Copy embed code or use direct link for seamless integration on any website or mobile webview</sub>
+    </td>
+    <td align="center">
+      <img src="docs/images/feature3.png" alt="Knowledge Base" width="100%"/>
+      <br />
+      <b>🔄 Automatic Vector Store Sync</b>
+      <br />
+      <sub><strong>Upload files and automatically sync with AWS Bedrock Knowledge Base vector store</strong></sub>
     </td>
   </tr>
 </table>
@@ -75,12 +79,14 @@ For production deployment on VPS/servers:
 ```
 
 **Features:**
+
 - Optimized build with minified assets
 - Generic error messages (security)
 - Binds to `0.0.0.0` for external access
 - Accessible via server IP address
 
 **Access:**
+
 - Local: `http://localhost`
 - External: `http://YOUR_SERVER_IP`
 - Backend API: `http://YOUR_SERVER_IP:8000`
@@ -95,6 +101,7 @@ For local development with hot reload:
 ```
 
 **Features:**
+
 - Frontend hot module replacement (instant updates)
 - Backend auto-reload on code changes
 - Detailed error messages with tracebacks
@@ -107,11 +114,13 @@ For local development with hot reload:
 ```
 
 **Options:**
+
 - `--dev` - Run in development mode with hot reload
 - `--clean` - Reset database and volumes before starting
 - `--no-clean` - Keep existing database (skip interactive prompt)
 
 **Examples:**
+
 ```bash
 # Interactive setup (prompts for database reset)
 ./setup.sh
@@ -131,6 +140,7 @@ For local development with hot reload:
 ### Firewall Configuration
 
 Open required ports:
+
 ```bash
 # HTTP (Frontend)
 sudo ufw allow 80/tcp
@@ -145,11 +155,13 @@ sudo ufw allow 443/tcp
 ### Recommended: Use Nginx Reverse Proxy
 
 For production, use Nginx to:
+
 - Serve on port 80/443
 - Handle SSL/TLS certificates
 - Proxy backend API requests
 
 Example Nginx configuration:
+
 ```nginx
 server {
     listen 80;
@@ -171,11 +183,11 @@ server {
 
 ## Features
 
+- **One-Click Setup Wizard**: Easy first-time setup flow with guided AWS configuration
+- **Embeddable Chat Widget**: Copy embed code or use direct link to add the chatbot to any website or mobile webview
+- **🔄 Automatic Vector Store Sync**: **Upload files and automatically sync with AWS Bedrock Knowledge Base vector store** - no manual configuration needed
 - **Admin Dashboard**: Configure AWS credentials, manage files, and monitor the chatbot
-- **Setup Wizard**: Easy first-time setup flow with guided AWS configuration
-- **Embeddable Chat Widget**: Copy embed code to add the chatbot to any website
 - **AWS Bedrock Integration**: Powered by Claude models (Haiku 4.5, Sonnet 4, Sonnet 4.5)
-- **Knowledge Base Sync**: Upload documents and sync with AWS Bedrock Knowledge Base
 - **Model Selection**: Choose between different Claude models based on your needs
 - **Production Error Handling**: Generic error messages in production, detailed in development
 
@@ -201,6 +213,7 @@ server {
 ### Model Selection
 
 Available models (configured in Admin Dashboard):
+
 - **Claude 4.5 Haiku**: Fast & cost-effective (default)
 - **Claude 4 Sonnet**: Balanced performance
 - **Claude 4.5 Sonnet**: Most capable
@@ -218,6 +231,7 @@ Available models (configured in Admin Dashboard):
 ### Database Issues
 
 Reset the database:
+
 ```bash
 ./setup.sh --clean
 ```
@@ -225,10 +239,11 @@ Reset the database:
 ### Port Conflicts
 
 If ports 80 or 8000 are in use, modify `docker-compose.yml`:
+
 ```yaml
 ports:
-  - "8080:80"  # Change frontend port
-  - "8001:8000"  # Change backend port
+  - "8080:80" # Change frontend port
+  - "8001:8000" # Change backend port
 ```
 
 ### View Logs
