@@ -250,7 +250,7 @@ ports:
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Backend only
 docker logs aws-bedrock-rag-chatbot-rag-chatbot-backend-1 -f

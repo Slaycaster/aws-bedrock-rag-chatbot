@@ -58,9 +58,9 @@ fi
 if [ "$CLEAN_MODE" = true ]; then
     echo "🗑️  Cleaning up database and volumes..."
     if [ "$DEV_MODE" = true ]; then
-        docker-compose -f docker-compose.dev.yml down -v
+        docker compose -f docker-compose.dev.yml down -v
     else
-        docker-compose down -v
+        docker compose down -v
     fi
     echo "✅ Database and volumes removed."
     echo ""
@@ -69,7 +69,7 @@ fi
 # Start containers
 if [ "$DEV_MODE" = true ]; then
     echo "Starting in DEVELOPMENT mode with hot reload..."
-    docker-compose -f docker-compose.dev.yml up -d --build
+    docker compose -f docker-compose.dev.yml up -d --build
     echo ""
     echo "========================================="
     echo "  App is running in DEVELOPMENT mode!"
@@ -80,7 +80,7 @@ if [ "$DEV_MODE" = true ]; then
     echo "========================================="
 else
     echo "Building and starting containers in PRODUCTION mode..."
-    docker-compose up -d --build
+    docker compose up -d --build
     echo ""
     echo "========================================="
     echo "  App is running in PRODUCTION mode!"
