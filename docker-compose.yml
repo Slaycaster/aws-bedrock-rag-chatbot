@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   rag-chatbot-backend:
@@ -14,9 +14,12 @@ services:
     command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
 
   rag-chatbot-frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ""
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - rag-chatbot-backend
 

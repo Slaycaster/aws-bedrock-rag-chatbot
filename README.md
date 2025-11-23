@@ -135,22 +135,103 @@ For local development with hot reload:
 ./setup.sh --no-clean
 ```
 
+## Environment Configuration
+
+### API URL Configuration
+
+The frontend automatically configures the API URL based on the environment:
+
+**Development Mode:**
+
+- Uses `http://localhost:8000` (defined in `docker-compose.dev.yml`)
+- Allows local development with hot reload
+
+**Production Mode:**
+
+- Uses relative paths (empty `VITE_API_URL`)
+- All API calls go through the same domain as the frontend
+- Works seamlessly with nginx reverse proxy
+
+If you need to customize the API URL, you can:
+
+1. **For development:** Create a `.env.development` file in the `frontend/` directory:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+2. **For production:** Modify the build args in `docker-compose.yml`:
+
+```yaml
+rag-chatbot-frontend:
+  build:
+    context: ./frontend
+    args:
+      VITE_API_URL: "" # Empty for relative paths, or specify full URL
+```
+
+### Port Configuration
+
+By default, the application uses:
+
+- **Frontend:** Port 8080 (mapped from container's port 80)
+- **Backend:** Port 8000
+- **Nginx Reverse Proxy:** Port 80 (public-facing)
+
+To change ports, edit `docker-compose.yml`:
+
+```yaml
+ports:
+  - "YOUR_PORT:80" # Frontend
+  - "YOUR_PORT:8000" # Backend
+```
+
 ## VPS/Server Deployment
+
+### Deployment Steps
+
+1. **Clone the repository on your VPS:**
+
+```bash
+git clone <your-repo-url>
+cd aws-bedrock-rag-chatbot
+```
+
+2. **Run the setup script:**
+
+```bash
+./setup.sh
+```
+
+3. **Configure Nginx (see below)**
+
+4. **Restart services:**
+
+```bash
+docker-compose down
+docker-compose up -d --build
+sudo systemctl restart nginx
+```
 
 ### Firewall Configuration
 
-Open required ports:
+If using Nginx reverse proxy (recommended):
 
 ```bash
-# HTTP (Frontend)
+# HTTP
 sudo ufw allow 80/tcp
 
-# Backend API
-sudo ufw allow 8000/tcp
-
-# HTTPS (if using reverse proxy)
+# HTTPS
 sudo ufw allow 443/tcp
+
+# SSH (if not already enabled)
+sudo ufw allow 22/tcp
+
+# Enable firewall
+sudo ufw enable
 ```
+
+**Note:** Ports 8000 and 8080 should NOT be exposed externally when using nginx reverse proxy. They will be accessible only to nginx on localhost.
 
 ### Recommended: Use Nginx Reverse Proxy
 
@@ -159,26 +240,140 @@ For production, use Nginx to:
 - Serve on port 80/443
 - Handle SSL/TLS certificates
 - Proxy backend API requests
+- Load balancing and connection management
 
-Example Nginx configuration:
+**Important**: The Docker frontend container runs on port 8080, backend on port 8000.
+
+Example Nginx configuration (`/etc/nginx/nginx.conf`):
 
 ```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
 
-    location / {
-        proxy_pass http://localhost:80;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+events {
+    worker_connections 4096;
+    multi_accept on;
+    use epoll;
+}
 
-    location /api/ {
-        proxy_pass http://localhost:8000/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
+http {
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
+
+    # Buffer Settings (prevents header/cookie size errors)
+    client_header_buffer_size 16k;
+    large_client_header_buffers 4 32k;
+    client_max_body_size 50M;
+    client_body_buffer_size 128k;
+
+    # Proxy Settings
+    proxy_buffering on;
+    proxy_buffer_size 16k;
+    proxy_buffers 8 16k;
+    proxy_busy_buffers_size 32k;
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css text/xml text/javascript
+               application/json application/javascript application/xml+rss;
+
+    server {
+        listen 80;
+        server_name your-domain.com;
+
+        # API routes
+        location /api/ {
+            proxy_pass http://127.0.0.1:8000/;
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+        }
+
+        location /auth/ {
+            proxy_pass http://127.0.0.1:8000/auth/;
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+        }
+
+        location ~ ^/admin/(config|upload|sync|reset)$ {
+            proxy_pass http://127.0.0.1:8000$request_uri;
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+        }
+
+        location /chat/ {
+            proxy_pass http://127.0.0.1:8000/chat/;
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+        }
+
+        # Frontend - proxy to Docker container on port 8080
+        location / {
+            proxy_pass http://127.0.0.1:8080;
+            proxy_http_version 1.1;
+
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
     }
 }
+```
+
+#### System Limits
+
+Ensure your system can handle the connections:
+
+```bash
+# Edit /etc/security/limits.conf
+* soft nofile 65536
+* hard nofile 65536
+nginx soft nofile 65536
+nginx hard nofile 65536
+```
+
+Then restart nginx:
+
+```bash
+sudo nginx -t
+sudo systemctl restart nginx
 ```
 
 ## Features
@@ -257,6 +452,38 @@ docker logs aws-bedrock-rag-chatbot-rag-chatbot-backend-1 -f
 
 # Frontend only
 docker logs aws-bedrock-rag-chatbot-rag-chatbot-frontend-1 -f
+```
+
+### Nginx Issues
+
+**"worker_connections are not enough"**
+
+- Increase `worker_connections` in nginx.conf (see Nginx configuration section above)
+- Default is 768, recommended: 4096+
+
+**"Request Header Or Cookie Too Large"**
+
+- Increase buffer sizes in nginx.conf:
+
+```nginx
+client_header_buffer_size 16k;
+large_client_header_buffers 4 32k;
+```
+
+**"Connection refused" or 502 Bad Gateway**
+
+- Verify Docker containers are running: `docker ps`
+- Check if ports are accessible: `curl http://localhost:8080` and `curl http://localhost:8000`
+- Verify nginx configuration: `sudo nginx -t`
+- Check nginx error logs: `sudo tail -f /var/log/nginx/error.log`
+
+**Frontend making calls to localhost:8000 instead of production domain**
+
+- Ensure you've rebuilt the frontend after the latest changes:
+
+```bash
+docker-compose down
+docker-compose up -d --build
 ```
 
 ## Security Notes
