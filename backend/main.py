@@ -3,7 +3,8 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from backend.database import engine, Base
-from backend.api import auth, admin, chat
+from backend.api import auth, admin, chat, exam
+from backend.models import config, exam as exam_models
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -51,6 +52,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(chat.router)
+app.include_router(exam.router)
 
 @app.get("/")
 async def root():
