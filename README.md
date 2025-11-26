@@ -91,6 +91,20 @@ The script will:
 - **🔗 Webhook Integration**: Send exam results to external systems via configurable webhook URL
 - **📊 Request Metadata Support**: Pass user data and custom metadata via URL parameters
 
+<p align="center">
+  <img src="docs/images/feature6.png" alt="Customizable Color Palette" width="80%" />
+</p>
+
+<p align="center">
+  <img src="docs/images/feature7.png" alt="Customizable Color Palette" width="80%" />
+</p>
+
+<p align="center">
+  <img src="docs/images/feature8.png" alt="Customizable Color Palette" width="80%" />
+</p>
+
+- **Exam Mode**: Enables the chatbot to ask questions to the user and pass a webhook to your web application for the result.
+
 ## Widget Customization
 
 ### Color Palette
