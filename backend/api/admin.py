@@ -121,6 +121,32 @@ async def upload_files(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/files")
+async def list_files(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    config = db.query(Config).first()
+    if not config or not config.s3_bucket_name:
+        raise HTTPException(status_code=400, detail="S3 Bucket Name not configured")
+    
+    service = S3Service(db)
+    try:
+        files = service.list_files(config.s3_bucket_name)
+        return {"files": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/files/{file_key:path}")
+async def delete_file(file_key: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    config = db.query(Config).first()
+    if not config or not config.s3_bucket_name:
+        raise HTTPException(status_code=400, detail="S3 Bucket Name not configured")
+    
+    service = S3Service(db)
+    try:
+        service.delete_file(config.s3_bucket_name, file_key)
+        return {"message": f"File {file_key} deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/sync")
 async def sync_kb(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     service = S3Service(db)

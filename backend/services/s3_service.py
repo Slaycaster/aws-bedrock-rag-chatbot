@@ -49,6 +49,32 @@ class S3Service:
             print(f"Error uploading to S3: {e}")
             raise e
 
+    def list_files(self, bucket_name: str):
+        s3 = self._get_s3_client()
+        try:
+            response = s3.list_objects_v2(Bucket=bucket_name)
+            files = []
+            if 'Contents' in response:
+                for obj in response['Contents']:
+                    files.append({
+                        'key': obj['Key'],
+                        'size': obj['Size'],
+                        'last_modified': obj['LastModified'].isoformat()
+                    })
+            return files
+        except Exception as e:
+            print(f"Error listing S3 files: {e}")
+            raise e
+
+    def delete_file(self, bucket_name: str, key: str):
+        s3 = self._get_s3_client()
+        try:
+            s3.delete_object(Bucket=bucket_name, Key=key)
+            return True
+        except Exception as e:
+            print(f"Error deleting S3 file: {e}")
+            raise e
+
     def start_ingestion_job(self):
         client = self._get_bedrock_agent_client()
         if not self.config.kb_id or not self.config.data_source_id:

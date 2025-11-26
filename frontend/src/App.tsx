@@ -25,6 +25,10 @@ function App() {
     }
   };
 
+  const isAuthenticated = () => {
+    return !!localStorage.getItem("token");
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -34,8 +38,8 @@ function App() {
       <Routes>
         <Route path="/wizard" element={!isSetup ? <Wizard onComplete={() => setIsSetup(true)} /> : <Navigate to="/admin" />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/widget" element={<div className="h-screen w-screen"><ChatWidget /></div>} />
-        <Route path="/admin/*" element={isSetup ? <AdminDashboard /> : <Navigate to="/wizard" />} />
+        <Route path="/widget" element={<div className="h-dvh w-screen overflow-hidden"><ChatWidget /></div>} />
+        <Route path="/admin/*" element={isSetup && isAuthenticated() ? <AdminDashboard /> : <Navigate to="/login" />} />
         <Route path="/" element={<Navigate to={isSetup ? "/admin" : "/wizard"} />} />
       </Routes>
     </Router>
