@@ -4,6 +4,7 @@ import api from "../api";
 import ChatWidget from "../widget/ChatWidget";
 import SetupGuideModal from "../wizard/SetupGuideModal";
 import FileManager from "./FileManager";
+import ExamManager from "./ExamManager";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,6 +58,7 @@ function AdminDashboard() {
     try {
       await api.post("/admin/config", config);
       alert("Config updated!");
+      loadConfig();
     } catch (err) {
       alert("Error updating config");
     }
@@ -74,7 +76,6 @@ function AdminDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <div className="w-64 bg-white border-r shadow-sm">
         <div className="p-6 border-b">
           <h3 className="font-bold text-lg">Admin Panel</h3>
@@ -108,6 +109,20 @@ function AdminDashboard() {
           >
             Chat Preview
           </Button>
+          <Button
+            variant={activeTab === "exam" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveTab("exam")}
+          >
+            Exam Mode
+          </Button>
+          <Button
+            variant={activeTab === "appearance" ? "default" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveTab("appearance")}
+          >
+            Appearance
+          </Button>
         </nav>
         <div className="p-4 mt-auto border-t">
           <Button
@@ -123,7 +138,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-8 overflow-y-auto">
         {activeTab === "config" && (
           <div className="space-y-6 max-w-2xl">
@@ -165,6 +179,62 @@ function AdminDashboard() {
                         })
                       }
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Use {"{{name}}"} to insert the user's name from URL
+                      parameters
+                    </p>
+                  </div>
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Enable Exam Mode</Label>
+                        <p className="text-xs text-muted-foreground">
+                          When enabled, users can take exams after chatting with
+                          the knowledge base
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={config.enable_exam_mode || false}
+                        onClick={() =>
+                          setConfig({
+                            ...config,
+                            enable_exam_mode: !config.enable_exam_mode,
+                          })
+                        }
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                          config.enable_exam_mode ? "bg-primary" : "bg-gray-200"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            config.enable_exam_mode
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                    {config.enable_exam_mode && (
+                      <div className="space-y-2 mt-4 pl-4 border-l-2 border-muted">
+                        <Label>Webhook URL</Label>
+                        <Input
+                          value={config.webhook_url || ""}
+                          onChange={(e) =>
+                            setConfig({
+                              ...config,
+                              webhook_url: e.target.value,
+                            })
+                          }
+                          placeholder="https://your-server.com/webhook"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Exam results will be POST-ed to this URL. Can be
+                          overridden via URL parameter.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Response Model</Label>
@@ -381,6 +451,77 @@ function AdminDashboard() {
                     embed it in an iframe.
                   </p>
                 </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold text-sm mb-2">
+                    Widget URL Parameters:
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    You can customize the widget by adding GET parameters to the
+                    URL:
+                  </p>
+                  <div className="bg-muted p-4 rounded-lg font-mono text-sm break-all">
+                    {`${
+                      window.location.origin
+                    }/widget?name=John&id=12345&webhook=https://your-server.com/webhook&data=${encodeURIComponent(
+                      '{"course_id":"101"}'
+                    )}`}
+                  </div>
+                  <div className="mt-3 space-y-2 text-sm">
+                    <div className="flex gap-2">
+                      <code className="bg-muted px-2 py-1 rounded">name</code>
+                      <span className="text-muted-foreground">
+                        User's display name (use {"{{name}}"} in greeting
+                        message)
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <code className="bg-muted px-2 py-1 rounded">id</code>
+                      <span className="text-muted-foreground">
+                        External user ID for tracking
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <code className="bg-muted px-2 py-1 rounded">
+                        webhook
+                      </code>
+                      <span className="text-muted-foreground">
+                        Override webhook URL (falls back to Configuration
+                        setting)
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <code className="bg-muted px-2 py-1 rounded">data</code>
+                      <span className="text-muted-foreground">
+                        URL-encoded JSON object with custom data (passed to
+                        webhook)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h5 className="font-medium text-sm text-blue-800 mb-2">
+                      Webhook Payload Example:
+                    </h5>
+                    <pre className="text-xs text-blue-700 overflow-x-auto">
+                      {JSON.stringify(
+                        {
+                          event: "exam_completed",
+                          external_user_id: "12345",
+                          external_user_name: "John",
+                          session_id: "uuid-here",
+                          total_questions: 10,
+                          correct_answers: 8,
+                          score_percentage: 80,
+                          passed: true,
+                          passing_score: 70,
+                          custom_data: { course_id: "101" },
+                        },
+                        null,
+                        2
+                      )}
+                    </pre>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -391,6 +532,265 @@ function AdminDashboard() {
         {activeTab === "preview" && (
           <div className="flex justify-center items-start h-full">
             <ChatWidget />
+          </div>
+        )}
+
+        {activeTab === "exam" && <ExamManager />}
+
+        {activeTab === "appearance" && (
+          <div className="space-y-6 max-w-2xl">
+            <Card>
+              <CardHeader>
+                <CardTitle>Chat Widget Appearance</CardTitle>
+                <CardDescription>
+                  Customize the colors of your chatbot widget.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleConfigUpdate} className="space-y-6">
+                  <div className="space-y-4">
+                    <h4 className="font-medium text-sm">Primary Colors</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Primary Color</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={config.primary_color || "#18181b"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                primary_color: e.target.value,
+                              })
+                            }
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={config.primary_color || "#18181b"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                primary_color: e.target.value,
+                              })
+                            }
+                            placeholder="#18181b"
+                            className="flex-1"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Header background, buttons
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Primary Foreground</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={config.primary_foreground || "#fafafa"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                primary_foreground: e.target.value,
+                              })
+                            }
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={config.primary_foreground || "#fafafa"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                primary_foreground: e.target.value,
+                              })
+                            }
+                            placeholder="#fafafa"
+                            className="flex-1"
+                          />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Header text, button text
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4 space-y-4">
+                    <h4 className="font-medium text-sm">User Message Bubble</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Background</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={config.chat_bubble_user || "#18181b"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_user: e.target.value,
+                              })
+                            }
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={config.chat_bubble_user || "#18181b"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_user: e.target.value,
+                              })
+                            }
+                            placeholder="#18181b"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Text</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={
+                              config.chat_bubble_user_foreground || "#fafafa"
+                            }
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_user_foreground: e.target.value,
+                              })
+                            }
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={
+                              config.chat_bubble_user_foreground || "#fafafa"
+                            }
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_user_foreground: e.target.value,
+                              })
+                            }
+                            placeholder="#fafafa"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4 space-y-4">
+                    <h4 className="font-medium text-sm">Bot Message Bubble</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Background</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={config.chat_bubble_bot || "#f4f4f5"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_bot: e.target.value,
+                              })
+                            }
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={config.chat_bubble_bot || "#f4f4f5"}
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_bot: e.target.value,
+                              })
+                            }
+                            placeholder="#f4f4f5"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Text</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={
+                              config.chat_bubble_bot_foreground || "#18181b"
+                            }
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_bot_foreground: e.target.value,
+                              })
+                            }
+                            className="w-12 h-10 p-1 cursor-pointer"
+                          />
+                          <Input
+                            value={
+                              config.chat_bubble_bot_foreground || "#18181b"
+                            }
+                            onChange={(e) =>
+                              setConfig({
+                                ...config,
+                                chat_bubble_bot_foreground: e.target.value,
+                              })
+                            }
+                            placeholder="#18181b"
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium text-sm mb-4">Preview</h4>
+                    <div className="border rounded-lg p-4 bg-white">
+                      <div
+                        className="rounded-t-lg p-3 mb-4"
+                        style={{
+                          backgroundColor: config.primary_color || "#18181b",
+                          color: config.primary_foreground || "#fafafa",
+                        }}
+                      >
+                        <span className="font-medium">
+                          {config.bot_name || "Chat Support"}
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-start">
+                          <div
+                            className="rounded-lg px-4 py-2 max-w-[80%]"
+                            style={{
+                              backgroundColor:
+                                config.chat_bubble_bot || "#f4f4f5",
+                              color:
+                                config.chat_bubble_bot_foreground || "#18181b",
+                            }}
+                          >
+                            Hello! How can I help you today?
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <div
+                            className="rounded-lg px-4 py-2 max-w-[80%]"
+                            style={{
+                              backgroundColor:
+                                config.chat_bubble_user || "#18181b",
+                              color:
+                                config.chat_bubble_user_foreground || "#fafafa",
+                            }}
+                          >
+                            I have a question about the product.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button type="submit">Save Appearance</Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>
