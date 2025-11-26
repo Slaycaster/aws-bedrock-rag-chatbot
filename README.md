@@ -72,6 +72,115 @@ The script will:
   <img src="docs/images/feature5.png" alt="Chatbot Demo with RAG" width="80%" />
 </p>
 
+## Features
+
+- **One-Click Setup Wizard**: Easy first-time setup flow with guided AWS configuration
+- **Embeddable Chat Widget**: Copy embed code or use direct link to add the chatbot to any website or mobile webview
+- **🔄 Automatic Vector Store Sync**: **Upload files and automatically sync with AWS Bedrock Knowledge Base vector store** - no manual configuration needed
+- **Admin Dashboard**: Configure AWS credentials, manage files, and monitor the chatbot
+- **AWS Bedrock Integration**: Powered by Claude models (Haiku 4.5, Sonnet 4, Sonnet 4.5)
+- **Model Selection**: Choose between different Claude models based on your needs
+- **Production Error Handling**: Generic error messages in production, detailed in development
+
+<p align="center">
+  <img src="docs/images/feature4.png" alt="Customizable Color Palette" width="80%" />
+</p>
+
+- **🎨 Customizable Color Palette**: Brand the chatbot with your own colors via Admin Panel → Appearance
+- **📝 Dynamic Greeting Templates**: Personalize greetings with `{{name}}` variable support
+- **🔗 Webhook Integration**: Send exam results to external systems via configurable webhook URL
+- **📊 Request Metadata Support**: Pass user data and custom metadata via URL parameters
+
+## Widget Customization
+
+### Color Palette
+
+Customize the chatbot appearance via **Admin Panel → Appearance**:
+
+| Setting                | Description                    |
+| ---------------------- | ------------------------------ |
+| Primary Color          | Header background, send button |
+| Primary Foreground     | Header text, button icons      |
+| User Bubble Background | User message bubble color      |
+| User Bubble Text       | User message text color        |
+| Bot Bubble Background  | Bot message bubble color       |
+| Bot Bubble Text        | Bot message text color         |
+
+A live preview is shown while editing colors.
+
+### Greeting Templates
+
+Personalize the greeting message with dynamic variables in **Admin Panel → Configuration**:
+
+```
+Hello {{name}}! How can I help you today?
+```
+
+**Available Variables:**
+
+| Variable   | Description                    |
+| ---------- | ------------------------------ |
+| `{{name}}` | User's name from URL parameter |
+| `{{id}}`   | User's ID from URL parameter   |
+
+If a variable is not provided via URL, it will be automatically removed from the greeting (including surrounding commas/spaces).
+
+**Example:**
+
+- Greeting template: `Hello {{name}}! How can I help you?`
+- With `?name=John`: "Hello John! How can I help you?"
+- Without name param: "Hello! How can I help you?"
+
+### URL Parameters
+
+Pass metadata to the widget via URL query parameters:
+
+```
+/widget?name=John&id=12345&webhook=https://example.com/hook&data={"course":"101"}
+```
+
+| Parameter | Description                                       |
+| --------- | ------------------------------------------------- |
+| `name`    | User's display name (used in greeting template)   |
+| `id`      | External user ID for tracking                     |
+| `webhook` | Override webhook URL (falls back to admin config) |
+| `data`    | URL-encoded JSON object with custom data          |
+
+### Webhook Integration
+
+Configure a webhook URL to receive exam results:
+
+1. **Admin Configuration** (default): Set in Admin Panel → Configuration (when Exam Mode is enabled)
+2. **URL Parameter** (override): Pass `?webhook=URL` to override for specific sessions
+
+**Webhook Payload:**
+
+```json
+{
+  "event": "exam_completed",
+  "external_user_id": "12345",
+  "external_user_name": "John",
+  "session_id": "uuid-here",
+  "total_questions": 10,
+  "correct_answers": 8,
+  "score_percentage": 80.0,
+  "passed": true,
+  "passing_score": 70.0,
+  "custom_data": {
+    "course_id": "101"
+  }
+}
+```
+
+The `custom_data` field contains any JSON passed via the `data` URL parameter.
+
+## Architecture
+
+- **Frontend**: React + TypeScript + Vite + shadcn/ui + Tailwind CSS (Node 22)
+- **Backend**: Python 3.11 + FastAPI + SQLAlchemy + Boto3
+- **Database**: SQLite (persistent via Docker volume)
+- **Deployment**: Docker + Docker Compose
+
 ## Deployment Modes
 
 ### Production Mode (Default)
@@ -379,115 +488,6 @@ Then restart nginx:
 sudo nginx -t
 sudo systemctl restart nginx
 ```
-
-## Features
-
-- **One-Click Setup Wizard**: Easy first-time setup flow with guided AWS configuration
-- **Embeddable Chat Widget**: Copy embed code or use direct link to add the chatbot to any website or mobile webview
-- **🔄 Automatic Vector Store Sync**: **Upload files and automatically sync with AWS Bedrock Knowledge Base vector store** - no manual configuration needed
-- **Admin Dashboard**: Configure AWS credentials, manage files, and monitor the chatbot
-- **AWS Bedrock Integration**: Powered by Claude models (Haiku 4.5, Sonnet 4, Sonnet 4.5)
-- **Model Selection**: Choose between different Claude models based on your needs
-- **Production Error Handling**: Generic error messages in production, detailed in development
-
-<p align="center">
-  <img src="docs/images/feature4.png" alt="Customizable Color Palette" width="80%" />
-</p>
-
-- **🎨 Customizable Color Palette**: Brand the chatbot with your own colors via Admin Panel → Appearance
-- **📝 Dynamic Greeting Templates**: Personalize greetings with `{{name}}` variable support
-- **🔗 Webhook Integration**: Send exam results to external systems via configurable webhook URL
-- **📊 Request Metadata Support**: Pass user data and custom metadata via URL parameters
-
-## Widget Customization
-
-### Color Palette
-
-Customize the chatbot appearance via **Admin Panel → Appearance**:
-
-| Setting                | Description                    |
-| ---------------------- | ------------------------------ |
-| Primary Color          | Header background, send button |
-| Primary Foreground     | Header text, button icons      |
-| User Bubble Background | User message bubble color      |
-| User Bubble Text       | User message text color        |
-| Bot Bubble Background  | Bot message bubble color       |
-| Bot Bubble Text        | Bot message text color         |
-
-A live preview is shown while editing colors.
-
-### Greeting Templates
-
-Personalize the greeting message with dynamic variables in **Admin Panel → Configuration**:
-
-```
-Hello {{name}}! How can I help you today?
-```
-
-**Available Variables:**
-
-| Variable   | Description                    |
-| ---------- | ------------------------------ |
-| `{{name}}` | User's name from URL parameter |
-| `{{id}}`   | User's ID from URL parameter   |
-
-If a variable is not provided via URL, it will be automatically removed from the greeting (including surrounding commas/spaces).
-
-**Example:**
-
-- Greeting template: `Hello {{name}}! How can I help you?`
-- With `?name=John`: "Hello John! How can I help you?"
-- Without name param: "Hello! How can I help you?"
-
-### URL Parameters
-
-Pass metadata to the widget via URL query parameters:
-
-```
-/widget?name=John&id=12345&webhook=https://example.com/hook&data={"course":"101"}
-```
-
-| Parameter | Description                                       |
-| --------- | ------------------------------------------------- |
-| `name`    | User's display name (used in greeting template)   |
-| `id`      | External user ID for tracking                     |
-| `webhook` | Override webhook URL (falls back to admin config) |
-| `data`    | URL-encoded JSON object with custom data          |
-
-### Webhook Integration
-
-Configure a webhook URL to receive exam results:
-
-1. **Admin Configuration** (default): Set in Admin Panel → Configuration (when Exam Mode is enabled)
-2. **URL Parameter** (override): Pass `?webhook=URL` to override for specific sessions
-
-**Webhook Payload:**
-
-```json
-{
-  "event": "exam_completed",
-  "external_user_id": "12345",
-  "external_user_name": "John",
-  "session_id": "uuid-here",
-  "total_questions": 10,
-  "correct_answers": 8,
-  "score_percentage": 80.0,
-  "passed": true,
-  "passing_score": 70.0,
-  "custom_data": {
-    "course_id": "101"
-  }
-}
-```
-
-The `custom_data` field contains any JSON passed via the `data` URL parameter.
-
-## Architecture
-
-- **Frontend**: React + TypeScript + Vite + shadcn/ui + Tailwind CSS (Node 22)
-- **Backend**: Python 3.11 + FastAPI + SQLAlchemy + Boto3
-- **Database**: SQLite (persistent via Docker volume)
-- **Deployment**: Docker + Docker Compose
 
 ## Configuration
 
