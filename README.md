@@ -1,6 +1,6 @@
 # AWS Bedrock RAG Chatbot
 
-![AWS Bedrock RAG Chatbot](docs/images/preview.png)
+![AWS Bedrock RAG Chatbot](docs/images/feature5.png)
 
 A drop-in app for your VPS/server, embeddable chatbot powered by AWS Bedrock with Retrieval-Augmented Generation (RAG) capabilities.
 
@@ -42,35 +42,35 @@ The script will:
 
 ## ✨ Features at a Glance
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/images/feature1.png" alt="Setup Wizard" width="100%"/>
-      <br />
-      <b>🚀 One-Click Setup Wizard</b>
-      <br />
-      <sub>Get started in minutes with our guided configuration flow</sub>
-    </td>
-    <td align="center">
-      <img src="docs/images/feature2.png" alt="Chat Widget" width="100%"/>
-      <br />
-      <b>💬 Embeddable Chat Widget</b>
-      <br />
-      <sub>Copy embed code or use direct link for seamless integration on any website or mobile webview</sub>
-    </td>
-    <td align="center">
-      <img src="docs/images/feature3.png" alt="Knowledge Base" width="100%"/>
-      <br />
-      <b>🔄 Automatic Vector Store Sync</b>
-      <br />
-      <sub><strong>Upload files and automatically sync with AWS Bedrock Knowledge Base vector store</strong></sub>
-    </td>
-  </tr>
-</table>
+### 🚀 One-Click Setup Wizard
 
 <p align="center">
-  <img src="docs/images/feature5.png" alt="Chatbot Demo with RAG" width="80%" />
+  <img src="docs/images/feature1.png" alt="Setup Wizard" width="100%"/>
 </p>
+
+**Get started in minutes with our guided configuration flow.**
+
+---
+
+### 💬 Embeddable Chat Widget
+
+<p align="center">
+  <img src="docs/images/feature2.png" alt="Chat Widget" width="100%"/>
+</p>
+
+**Copy embed code or use direct link for seamless integration on any website or mobile webview.**
+
+---
+
+### 🔄 Automatic Vector Store Sync
+
+<p align="center">
+  <img src="docs/images/feature3.png" alt="Knowledge Base" width="100%"/>
+</p>
+
+**Upload files and automatically sync with AWS Bedrock Knowledge Base vector store.**
+
+---
 
 ## Features
 
